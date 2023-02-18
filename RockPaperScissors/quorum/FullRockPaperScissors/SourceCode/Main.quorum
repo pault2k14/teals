@@ -1,0 +1,122 @@
+use Libraries.Compute.Random
+class Main
+    /* Action Main has no parameters or return value.
+       This is where the program begins executing. Within this method you should
+       give the instructions to the user and then play the game.
+    */
+    action Main
+        GiveInstructions()
+        PlayGame()
+    end
+
+    /* Action GiveInstructions has no parameters or return value.
+        It handles giving all game rules and instructions to the user before
+        the game begins.
+    */
+    action GiveInstructions
+        output "Welcome to the Rock Paper Scissors game!"
+        output "Here are the rules:"
+        output "The player and the computer will pick rock, paper, or scissors."
+        output "Paper beats rock."
+        output "Rock beats scissors"
+        output "Scissors beat paper."
+    end
+
+    /* Action PlayGame has no parameters or return value.
+       It handles anything involving playing the game. This includes asking the player
+       for their choice, generating the computer's choice, determining the winner,
+       and determining if the player wishes to quit the game or continue playing.
+    */
+    action PlayGame
+        text playAgain = "Y"
+        repeat while playAgain = "Y" or playAgain = "y"
+            integer player = PlayersTurn()
+            integer computer = ComputersTurn()
+            DetermineWinner(player, computer)
+            playAgain = input("Would you like to play again (Y/N)?")
+        end
+    end
+
+    /* Action PlayersTurn has no parameters and returns an integer value.
+       This action handles asking the user for their choice of rock, paper, or
+       scissors. It also checks the input for errors. Then it returns the valid
+       user choice.
+    */
+    action PlayersTurn returns integer
+        boolean isValid = false
+        integer choice = 0
+        
+        repeat while isValid = false
+            text userChoice = input("Enter 1 for Rock, 2 for Paper, 3 for Scissors: ")
+            
+            check
+                choice = cast(integer, userChoice)
+                if choice = 1 or choice = 2 or choice = 3
+                    isValid = true
+                else
+                    output "Invalid input"
+                end                 
+    
+            detect e is Error
+                output "Invalid input"
+            end
+    
+        end
+
+        return choice
+    end
+
+    /* Action ComputersTurn has no parameters and returns an integer value.
+       This action handles randomly generating the computer's choice. Then it
+       returns that value.
+    */
+    action ComputersTurn returns integer
+        Random generator
+        integer choice = generator:RandomIntegerBetween(1, 3)
+        return choice
+    end
+
+
+    action ConvertChoiceIntegerToText(integer choice) returns text
+        if choice = 1
+            return "rock"
+        elseif choice = 2
+            return "paper"
+        elseif choice = 3
+            return "scissors"
+        end
+        return ""
+    end
+    /* Action DetermineWinner has two parameters and no return value. The first
+       parameter is the player's choice and the second is the computer's choice.
+       This action handles determining the winner of a round in the game. It
+       also says who won the round
+    */
+    action DetermineWinner(integer playerChoice, integer computerChoice)
+        text textPlayerChoice = ConvertChoiceIntegerToText(playerChoice)
+        text textComputerChoice = ConvertChoiceIntegerToText(computerChoice)
+        text resultString = "The player chose " + textPlayerChoice + " and the computer chose " + textComputerChoice + ", "
+
+        if textPlayerChoice = textComputerChoice
+            say resultString + "it is a tie!"
+        elseif textPlayerChoice = "rock"
+            if textComputerChoice = "paper"
+                say resultString + "the computer wins!"
+            elseif textComputerChoice = "scissors"
+                say resultString + "you win!"
+            end
+        elseif textPlayerChoice = "paper"
+            if textComputerChoice = "rock"
+                say resultString + "you win!"
+            elseif textComputerChoice = "scissors"
+                say resultString + "the computer wins!"
+            end
+        elseif textPlayerChoice = "scissors"
+            if textComputerChoice = "paper"
+                say resultString + "you win!"
+            elseif textComputerChoice = "rock"
+                say resultString + "the computer wins!"
+            end
+        end
+    end
+end
