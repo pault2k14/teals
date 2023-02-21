@@ -1,0 +1,94 @@
+use Libraries.Containers.Array
+
+class Application
+
+    Array<text> questions
+    Array<text> answers
+
+    action FinishGame(text playerName, integer score)
+        output playerName + " your final score was " + score
+    end
+
+    action PlayGame(text playerName) returns integer
+        integer index = 0
+        integer score = 0
+
+        repeat questions:GetSize() times
+            output(playerName + " your current score is " + score)
+            output questions:Get(index)
+            text guess = input("Your answer: ")
+            if answers:Get(index) = guess
+                output("That is correct " + playerName + "!")
+                score = score + 10
+            else
+                output("That is incorrect " + playerName + " :(")
+            end
+            
+            index = index + 1
+        end
+        
+        
+        return score
+    end
+
+    action GiveInstructions()
+        output "Welcome to the Baltimore Orioles Trivia Game!"
+        output "To answer each question type the letter associated with your answer and press enter"
+    end
+
+    action SetupQuestionsAndAnswers()
+        questions:Add("
+During their first season as a major league baseball team, what were the Baltimore Orioles called?
+a. Badgers
+b. Brewers
+c. Barn Owls
+d. Browns")
+        
+        answers:Add("b")
+        
+        questions:Add("
+Who was the first Oriole to hit 50 home runs in a season?
+a. Chris Davis
+b. Jim Gentile
+c. Brady Anderson
+d. Frank Robinson")
+
+        answers:Add("c")
+
+        questions:Add("
+How tall was the shortest player in Orioles team history?
+a. 3 Feet 7 Inches
+b. 4 Feet 10 Inches
+c. 5 Feet 4 Inches
+d. 4 Feet 2 inches")
+
+        answers:Add("a")
+
+        questions:Add("
+Which Oriole was named MVP of the 1970 World Series?
+a. Boog Powell
+b. Mike Cuellar
+c. Frank Robinson
+d. Brooks Robinson")
+
+        answers:Add("d")
+
+        questions:Add("
+Which Oriole was the first pitcher in MLB history to hit a grand slam in a World Series?
+a. Milt Pappas
+b. Jim Palmer
+c. Dave Mcnally
+d. Mike Mussina")
+
+        answers:Add("c")
+    end
+    
+
+    action Main
+        SetupQuestionsAndAnswers()
+        GiveInstructions()
+        text playerName = input("What is your name?")
+        integer score = PlayGame(playerName)
+        FinishGame(playerName, score)
+    end
+end
