@@ -1,0 +1,103 @@
+use Libraries.Containers.Array
+use Libraries.Compute.Random
+
+class Main
+
+    Array<text> words
+    
+    action Main
+        output "Welcome to the Word Guess game!"
+        text playerName = input("What is your name? ")
+        SetupWordArray()
+        GiveInstructions()
+        boolean guessedCorrectly = PlayGame(playerName)
+        FinishGame(guessedCorrectly, playerName)
+    end
+
+    action SetupWordArray()
+        words:Add("computer")
+        words:Add("programming")
+        words:Add("class")
+        words:Add("word")
+        words:Add("guess")
+        words:Add("fun")
+    end
+
+    action GiveInstructions()
+        output "To play the game guess any letter that you have not previously guessed for the current word."
+        output "You have seven guesses for each word"
+    end
+
+    action PlayGame(text playerName) returns boolean
+        integer guessesRemaining = 7
+        boolean continueGuessing = true
+        boolean guessedCorrectly = false
+        Array<text> guessedLetters
+        Random generator
+        integer choice = generator:RandomIntegerBetween(0, words:GetSize() - 1)
+        text chosenWord = words:Get(choice)
+
+        repeat while continueGuessing and guessesRemaining > 0
+            ShowWord(chosenWord, guessedLetters)
+            output(playerName + " you have " + guessesRemaining + " letter guesses remaining.")
+            text guessedLetter = input(playerName + " guess a letter: ")
+            guessedLetters:Add(guessedLetter)
+            ShowWord(chosenWord, guessedLetters)
+            text guessedWord = input(playerName + " guess the word: ")
+
+            if chosenWord:EqualsIgnoringCase(guessedWord)
+                guessedCorrectly = true
+                continueGuessing = false
+            else 
+                output "Incorrect word guess!"
+            end
+
+            guessesRemaining = guessesRemaining - 1
+        end
+
+        return guessedCorrectly        
+    end
+
+    action ShowWord(text chosenWord, Array<text> guessedLetters)
+        text wordToShow = ""
+        integer chosenWordIndex = 0   
+
+        repeat while chosenWord:GetSize() > chosenWordIndex
+            text currentChosenWordLetter = chosenWord:GetCharacter(chosenWordIndex)
+            integer guessedLettersIndex = 0
+            boolean letterNotMatched = true
+            
+            repeat while guessedLetters:GetSize() > guessedLettersIndex and letterNotMatched
+                text currentGuessedLetter = guessedLetters:Get(guessedLettersIndex)                
+
+                if currentChosenWordLetter:EqualsIgnoringCase(currentGuessedLetter)                
+                    wordToShow = wordToShow + currentGuessedLetter + " "
+                    letterNotMatched = false
+                end
+
+                guessedLettersIndex = guessedLettersIndex + 1
+                
+            end
+
+            if letterNotMatched
+                wordToShow = wordToShow + "_" + " "
+            end
+
+            chosenWordIndex = chosenWordIndex + 1
+        end
+
+        output wordToShow
+
+    end
+
+    action FinishGame(boolean guessedCorrectly, text playerName)
+        if guessedCorrectly
+            output playerName + " you guessed the word correctly!"
+        else
+            output playerName + " you failed to guess the word!"
+        end
+    end
+
+
+
+end
