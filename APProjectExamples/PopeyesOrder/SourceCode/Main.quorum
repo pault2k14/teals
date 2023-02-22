@@ -1,0 +1,101 @@
+use Libraries.Containers.Array
+
+class Main
+
+    Array<text> menuItemNames
+    Array<number> menuItemPrices
+    Array<text> orderItemNames
+    Array<number> orderItemPrices
+
+    action Main
+        output "Welcome to the Popeye's Ordering App!"
+        text userName = input("What is your name? ")
+        SetupMenu()
+        number orderTotal = TakeOrder(userName)
+        output userName + " your completed order is: "
+        ShowCurrentOrder()
+        output "Your order total is $" + orderTotal + " please pay at the store!"
+    end
+
+    action SetupMenu
+        menuItemNames:Add("Classic Chicken Sandwitch")
+        menuItemPrices:Add(5.00)
+        menuItemNames:Add("Spicy Chicken Sandwitch")
+        menuItemPrices:Add(5.00)
+        menuItemNames:Add("Classic Flounder Fish Sandwitch")
+        menuItemPrices:Add(4.55)
+        menuItemNames:Add("Spicy Flounder Fish Sandwitch")
+        menuItemPrices:Add(4.50)
+        menuItemNames:Add("3 Piece Chicken Tenders")
+        menuItemPrices:Add(3.19)
+        menuItemNames:Add("5 Piece Chicken Tenders")
+        menuItemPrices:Add(4.99)
+        menuItemNames:Add("Mac & Cheese")
+        menuItemPrices:Add(3.25)
+        menuItemNames:Add("Cajun Fries")
+        menuItemPrices:Add(2.75)
+        menuItemNames:Add("Fountain Drink")
+        menuItemPrices:Add(1.99)
+    end
+
+    action TakeOrder(text userName) returns number
+        number totalCost = 0.00
+        boolean continueOrdering = true
+
+        repeat while continueOrdering
+            ShowMenu()
+            text userChoice = input(userName + " please type an item number to add it to your order or Q to finish your order: ")
+            output ""
+
+            if userChoice:Equals("q")
+                continueOrdering = false
+            else
+                check
+                    integer itemNumber = cast(integer, userChoice)
+                    text itemName = menuItemNames:Get(itemNumber)
+                    number itemPrice = menuItemPrices:Get(itemNumber)
+                    orderItemNames:Add(itemName)
+                    orderItemPrices:Add(itemPrice)
+                    output userName + " your current order is: "
+                    ShowCurrentOrder()
+                detect e
+                    output userName + " that was not a valid menu choice."
+                end
+            end
+            
+        end
+
+        integer index = 0
+
+        repeat orderItemPrices:GetSize() times
+            totalCost = totalCost + orderItemPrices:Get(index)
+            index = index + 1
+        end
+
+        return totalCost
+    end
+
+    action ShowMenu()
+        integer index = 0
+        output ""
+        output "Popeyes Menu"
+        output ""
+        
+        repeat menuItemNames:GetSize() times
+            output index + ". " + menuItemNames:Get(index) + " $" + menuItemPrices:Get(index)
+            index = index + 1
+        end
+        
+        output ""
+    end
+
+    action ShowCurrentOrder()
+        integer index = 0
+
+        repeat orderItemNames:GetSize() times
+            output index + ". " + orderItemNames:Get(index) + " $" + orderItemPrices:Get(index)
+            index = index + 1
+        end
+    end    
+
+end
