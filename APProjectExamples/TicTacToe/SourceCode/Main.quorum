@@ -1,0 +1,269 @@
+use Libraries.Containers.Array
+use Libraries.Compute.Random
+
+class Main
+    Array<text> rowOne
+    Array<text> rowTwo
+    Array<text> rowThree
+
+    action Main
+        boolean gameActive = true
+        output "Welcome to the Tic Tac Toe Game!"
+        SetupRowArrays()
+        GiveInstructions()
+        DrawGame()
+
+        repeat while gameActive
+            boolean boardIsFull = IsBoardFull()
+
+            if gameActive and not boardIsFull
+                output ""
+                output "Your Turn!"
+                output ""
+
+                PlayerTurn()
+                DrawGame()
+                boolean playerHasWon = CheckForWinner("X")
+            
+                if playerHasWon
+                    gameActive = false
+                    output("You have won!")
+                end
+            end
+            
+            if gameActive and not boardIsFull
+                output ""
+                output "Computers Turn!"
+                output ""
+
+                ComputerTurn()
+                DrawGame()
+                boolean computerHasWon = CheckForWinner("O")
+
+                if computerHasWon
+                    gameActive = false
+                    output("The computer has won!")
+                end
+            end
+
+            if boardIsFull
+                output("The board is full, the game ends in a tie!")
+                gameActive = false
+            end
+
+        end
+        
+        output("Game Over!") 
+
+    end
+
+    action GiveInstructions()
+        output("")
+        output("You and the computer will take turns placing your X or O into each space, the first")
+        output("player to get three of their X's or O's in a row, column, or diagonally wins!")
+        output("To play, choose the column number and row number that you would like to take.")
+        output("the column and row numbers are indicated above and to the left of the game board.")
+        output("")
+    end
+
+    action IsBoardFull() returns boolean
+        integer index = 0
+        repeat 3 times
+            if rowOne:Get(index) = " "
+                return false
+            elseif rowTwo:Get(index) = " "
+                return false
+            elseif rowThree:Get(index) = " "
+                return false            
+            end        
+            index = index + 1
+        end
+
+        return true
+    end
+
+    action ComputerTurn()
+        boolean invalidChoice = true
+        Random generator
+
+        repeat while invalidChoice
+            integer computerColumn = generator:RandomIntegerBetween(0, 2)
+            integer computerRow = generator:RandomIntegerBetween(0, 2)
+            boolean validityCheck = CheckValidColumnAndRow(computerColumn, computerRow, "O")
+            
+            if validityCheck
+                invalidChoice = false
+            end
+        end
+        
+    end
+
+    action CheckValidColumnAndRow(integer selectedColumn, integer selectedRow, text playerText) returns boolean
+        if selectedRow = 0
+            if rowOne:Get(selectedColumn) not= " "
+                return false
+            else
+               rowOne:Set(selectedColumn, playerText)
+               return true
+            end
+         elseif selectedRow = 1
+            if rowTwo:Get(selectedColumn) not= " "
+                return false
+            else
+               rowTwo:Set(selectedColumn, playerText)
+               return true
+            end
+         elseif selectedRow = 2
+            if rowThree:Get(selectedColumn) not= " "
+                return false
+            else
+                rowThree:Set(selectedColumn, playerText)
+                return true
+            end
+         else
+            return false
+         end
+    end
+
+    action PlayerTurn()
+        integer playerColumnInt = -1
+        integer playerRowInt = -1
+        boolean invalidPlayerInputForColumn = true
+        boolean invalidPlayerInputForRow = true
+        boolean invalidColumnAndRowSelected = true
+
+        repeat while invalidColumnAndRowSelected
+
+            repeat while invalidPlayerInputForColumn
+                text playerColumn = input("Choose a column (0 to 2): ")
+        
+                check
+                    playerColumnInt = cast(integer, playerColumn)
+                detect e
+                    output("That was not a valid column!")
+                end
+
+                if playerColumnInt >= 0 and playerColumnInt <= 2
+                    invalidPlayerInputForColumn = false
+                else
+                    output("That was not a valid column!")
+                end
+            end
+
+            repeat while invalidPlayerInputForRow
+                text playerRow = input("Choose a row (0 to 2): ")
+        
+                check
+                    playerRowInt = cast(integer, playerRow)
+                detect e
+                    output("That was not a valid row!")
+                end
+
+                if playerRowInt >= 0 and playerRowInt <= 2
+                    invalidPlayerInputForRow = false
+                else
+                    output("That was not a valid row!")
+                end
+            end
+
+            boolean validityCheck = CheckValidColumnAndRow(playerColumnInt, playerRowInt, "X")
+
+            if validityCheck
+                invalidColumnAndRowSelected = false
+            else
+                output("That column and row has already been taken!")
+            end
+
+            invalidPlayerInputForRow = true
+            invalidPlayerInputForColumn = true
+        end
+         
+    end
+
+    action SetupRowArrays()
+
+        repeat 3 times
+            rowOne:Add(" ")
+            rowTwo:Add(" ")
+            rowThree:Add(" ")
+        end
+    end
+
+    action DrawGame()
+        output "  0 1 2"
+        output "0|" + rowOne:Get(0) + "|" + rowOne:Get(1) + "|" + rowOne:Get(2) + "|"
+        output " |-|-|-|"
+        output "1|" + rowTwo:Get(0) + "|" + rowTwo:Get(1) + "|" + rowTwo:Get(2) + "|"
+        output " |-|-|-|"
+        output "2|" + rowThree:Get(0) + "|" + rowThree:Get(1) + "|" + rowThree:Get(2) + "|"
+    end
+
+    action CheckForWinner(text textToCheck) returns boolean
+            boolean hasRowWinner = CheckRowWin(textToCheck)
+            boolean hasColumnWinner = CheckColumnWin(textToCheck)
+            boolean hasDiagonalWinner = CheckDiagonalWin(textToCheck)
+            
+            if hasRowWinner or hasColumnWinner or hasDiagonalWinner
+                return true
+            else
+                return false
+            end
+
+    end
+
+    action CheckRowWin(text textToCheck) returns boolean
+
+        if rowOne:Get(0) = textToCheck and rowOne:Get(1) = textToCheck and
+            rowOne:Get(2) = textToCheck
+            return true
+        end
+
+        if rowTwo:Get(0) = textToCheck and rowTwo:Get(1) = textToCheck and
+            rowTwo:Get(2) = textToCheck
+            return true
+        end
+
+        if rowThree:Get(0) = textToCheck and rowThree:Get(1) = textToCheck and
+            rowThree:Get(2) = textToCheck
+            return true
+        end
+
+        return false
+    end
+
+    action CheckColumnWin(text textToCheck) returns boolean
+
+        if rowOne:Get(0) = textToCheck and rowTwo:Get(0) = textToCheck and
+            rowThree:Get(0) = textToCheck
+            return true
+        end
+
+        if rowOne:Get(1) = textToCheck and rowTwo:Get(1) = textToCheck and
+            rowThree:Get(1) = textToCheck
+            return true
+        end
+
+        if rowOne:Get(2) = textToCheck and rowTwo:Get(2) = textToCheck and
+            rowThree:Get(2) = textToCheck
+            return true
+        end
+
+        return false
+    end
+
+    action CheckDiagonalWin(text textToCheck) returns boolean
+
+        if rowOne:Get(0) = textToCheck and rowTwo:Get(1) = textToCheck and
+            rowThree:Get(2) = textToCheck
+            return true
+        end
+
+        if rowOne:Get(2) = textToCheck and rowTwo:Get(1) = textToCheck and
+            rowThree:Get(0) = textToCheck
+            return true
+        end
+
+        return false
+    end
+
+end
