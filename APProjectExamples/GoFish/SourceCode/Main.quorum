@@ -1,0 +1,199 @@
+use Libraries.Containers.Array
+use Libraries.Compute.Random
+
+class Main
+
+    Array<text> deckOfCards
+    Array<text> playerHandOfCards
+    Array<text> computerHandOfCards
+
+    action Main
+        boolean gameActive = true
+        text playerName = BeginGame()
+
+        repeat while gameActive
+            if deckOfCards:GetSize() = 0
+                gameActive = false
+                FinishGame(playerName)
+            else 
+                PlayerTurn(playerName)
+            end 
+
+            if deckOfCards:GetSize() = 0
+                gameActive = false
+                FinishGame(playerName)
+            else 
+                ComputerTurn(playerName)
+            end 
+            
+        end
+       
+
+    end
+
+    action BeginGame() returns text
+        text playerName = input("What is your name?")
+        SetupDeckOfCards()
+        GiveInstructions(playerName)
+        DealCards(7, playerHandOfCards)
+        DealCards(7, computerHandOfCards)
+
+        return playerName
+    end
+
+    action SetupDeckOfCards()
+        repeat 4 times
+            deckOfCards:Add("A")
+            deckOfCards:Add("2")
+            deckOfCards:Add("3")
+            deckOfCards:Add("4")
+            deckOfCards:Add("5")
+            deckOfCards:Add("6")
+            deckOfCards:Add("7")
+            deckOfCards:Add("8")
+            deckOfCards:Add("9")
+            deckOfCards:Add("10")
+            deckOfCards:Add("J")
+            deckOfCards:Add("K")
+            deckOfCards:Add("Q")
+        end
+
+    end
+
+    action GiveInstructions(text playerName)
+        output(playerName + " weclome to the Go Fish game!")
+        output("During each turn the active player will choose a card in their hand and ask the")
+        output("other player if they have that card in their hand.") 
+        output(" - if they do have that card the other players gives the active player that card to put into their hand.")
+        output(" - If they do not have that card, the active player is told to Go Fish and they draw a card from the deck")
+        output("Once all of the cards have been drawn the player with the most cards in their hand wins!")
+    end
+
+    action DealCards(integer numCardsToDeal, Array<text> handToAddCardsTo)       
+        integer numCardsDealt = 0
+        Random generator
+
+        repeat while numCardsToDeal > numCardsDealt and deckOfCards:GetSize() > 0
+            integer choice = generator:RandomIntegerBetween(0, deckOfCards:GetSize() - 1)
+            text card = deckOfCards:Get(choice)
+            deckOfCards:Remove(card)
+            handToAddCardsTo:Add(card)
+            numCardsDealt = numCardsDealt + 1
+
+        end
+
+    end
+
+    action PlayerTurn(text playerName)
+
+        output(playerName + " your hand is:")
+            
+        integer index = 0
+        repeat playerHandOfCards:GetSize() times
+            output playerHandOfCards:Get(index)
+
+            index = index + 1
+        end
+
+        boolean inputInvalid = true
+        text chosenCard = ""   
+
+        repeat while inputInvalid
+            chosenCard = input(playerName + " which card would you like to ask for?")
+            chosenCard = chosenCard:ToUpperCase()
+
+            if playerHandOfCards:Has(chosenCard)
+                inputInvalid = false
+            else
+                output(playerName + " ysou don't have " + chosenCard + " in your deck!")
+            end
+        end
+
+        Array<text> cardsRecieved = CheckHandForCards(chosenCard, computerHandOfCards)
+
+        if cardsRecieved:GetSize() = 0
+            output("Sorry, "+ playerName + " Go Fish!")
+            DealCards(1, playerHandOfCards)
+        else
+            output(playerName + " you recieved " + cardsRecieved:GetSize() + " " + chosenCard + "'s from the computer!")
+
+            index = 0
+            repeat cardsRecieved:GetSize() times
+                text cardToAddToHand = cardsRecieved:Get(index)
+                playerHandOfCards:Add(cardToAddToHand)
+                index = index + 1
+            end
+        
+        end
+
+    end
+
+
+    action ComputerTurn(text playerName)
+        Random generator
+        integer choice = generator:RandomIntegerBetween(0, computerHandOfCards:GetSize() - 1)
+        text chosenCard = computerHandOfCards:Get(choice)
+
+        Array<text> cardsRecieved = CheckHandForCards(chosenCard, playerHandOfCards)
+        output(playerName + " the computer asked you for " + chosenCard + "'s")
+
+        if cardsRecieved:GetSize() = 0
+            output(playerName + " you tell the computer Sorry! Go Fish!")
+            DealCards(1, computerHandOfCards)
+        else
+            output(playerName + " you gave " + cardsRecieved:GetSize() + " " + chosenCard + "'s to the computer!")
+
+            index = 0
+            repeat cardsRecieved:GetSize() times
+                text cardToAddToHand = cardsRecieved:Get(index)
+                computerHandOfCards:Add(cardToAddToHand)
+                index = index + 1
+            end
+        
+        end
+
+    end
+
+    action CheckHandForCards(text cardToCheckFor, Array<text> handToCheck) returns Array<text>
+        Array<text> cardsToGiveOtherPlayer
+        boolean notDone = true
+
+        repeat while notDone
+
+            integer index = 0
+            boolean haveNotFoundCard = true 
+            repeat while haveNotFoundCard and handToCheck:GetSize() > index
+                text cardFromDeck = handToCheck:Get(index) 
+                if cardFromDeck:EqualsIgnoringCase(cardToCheckFor)
+                    handToCheck:Remove(cardToCheckFor)
+                    cardsToGiveOtherPlayer:Add(cardToCheckFor)
+                    haveNotFoundCard = false
+                end
+
+                index = index + 1
+
+                if index = handToCheck:GetSize()
+                    notDone = false
+                end
+            end
+        end
+
+        return cardsToGiveOtherPlayer
+    end
+
+    action FinishGame(text playerName)
+        output("There are no more cards in the deck!")
+        output(playerName + " has " + playerHandOfCards:GetSize() + " cards in hand.")
+        output("The computer has " + computerHandOfCards:GetSize() +   " cards in hand.")
+
+        if playerHandOfCards:GetSize() > computerHandOfCards:GetSize()
+            output(playerName + " wins the game!")
+        elseif computerHandOfCards:GetSize() > playerHandOfCards:GetSize()
+            output("The computer wins the game!")
+        else
+            output("The player and computer have the same number of cards in hand, it is a tie!")        
+        end
+
+    end
+
+end
