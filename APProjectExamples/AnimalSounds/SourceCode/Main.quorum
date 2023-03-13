@@ -1,0 +1,32 @@
+use Libraries.Containers.Array
+use Libraries.Compute.Random
+use Libraries.Sound.Audio
+use Libraries.System.File
+
+class Main
+
+    Array<text> animalNames
+    Array<Audio> animalAudio
+
+    action Main
+        SetupArrays()
+        say("What is your name?")
+        text userName = input("What is your name? ")
+        output("Nice to meet you " + userName)
+
+        integer index = 0
+        repeat animalNames:GetSize() times
+            output(animalNames:Get(index))
+            index = index + 1
+        end
+
+    end
+
+    action SetupArrays()
+        animalNames:Add("Horse")
+        animalNames:Add("Rooster")
+        animalNames:Add("Pig")
+        animalNames:Add("Bear")
+    end
+
+end
