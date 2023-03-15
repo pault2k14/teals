@@ -12,10 +12,12 @@ class Main
         SetupArrays()
         say("What is your name?")
         text userName = input("What is your name? ")
+        say("Nice to meet you " + userName)
         output("Nice to meet you " + userName)
 
         integer index = 0
         repeat animalNames:GetSize() times
+            say(animalNames:Get(index))
             output(animalNames:Get(index))
             index = index + 1
         end
